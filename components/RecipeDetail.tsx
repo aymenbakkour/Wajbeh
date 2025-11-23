@@ -14,20 +14,27 @@ const RecipeDetail: React.FC<Props> = ({ recipe, onBack }) => {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = `${window.location.origin}${window.location.pathname}?id=${recipe.id}`;
     const text = `جرب وصفة ${recipe.name} من تطبيق وجبة! 😋\n${url}`;
     
-    // Check if share API is supported
-    if (navigator.share) {
-      navigator.share({
-        title: recipe.name,
-        text: text,
-        url: url,
-      }).catch(console.error);
-    } else {
-      // Fallback to direct WhatsApp link if native share is not supported
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: recipe.name,
+          text: text,
+          url: url,
+        });
+      } else {
+        throw new Error('Web Share API not supported');
+      }
+    } catch (error) {
+      console.log('Share failed or cancelled:', error);
+      // Fallback to WhatsApp Web/App directly if native share fails or isn't supported
+      // We exclude AbortError which happens if user cancels the share dialog
+      if (error instanceof Error && error.name !== 'AbortError') {
+         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      }
     }
   };
 

@@ -5,7 +5,7 @@ import RecipeCard from './components/RecipeCard';
 import RecipeDetail from './components/RecipeDetail';
 import FilterPanel from './components/FilterPanel';
 import SuggestedRecipe from './components/SuggestedRecipe';
-import { Home, Filter as FilterIcon, Search, ChefHat } from 'lucide-react';
+import { Home, Filter as FilterIcon, Search, ChefHat, Leaf } from 'lucide-react';
 
 type View = 'home' | 'details' | 'filter';
 
@@ -16,6 +16,15 @@ const initialFilters: FilterState = {
   mainIngredient: '',
   isVegetarian: false,
 };
+
+// Quick categories configuration
+const quickCategories = [
+  { id: 'all', label: 'الكل', type: 'reset' },
+  { id: 'طبق رئيسي', label: 'وجبات رئيسية', type: 'category' },
+  { id: 'حلويات', label: 'حلويات', type: 'category' },
+  { id: 'مقبلات', label: 'مقبلات', type: 'category' },
+  { id: 'شوربة', label: 'شوربات', type: 'category' },
+];
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -101,6 +110,22 @@ function App() {
     setActiveFilters(initialFilters);
   };
 
+  const handleQuickCategoryClick = (id: string, type: string) => {
+    if (type === 'reset') {
+      const reset = { ...initialFilters };
+      setFilters(reset);
+      setActiveFilters(reset);
+    } else if (type === 'category') {
+      const newFilters = { ...initialFilters, category: id };
+      setFilters(newFilters);
+      setActiveFilters(newFilters);
+    } else if (type === 'vegetarian') {
+      const newFilters = { ...initialFilters, isVegetarian: true };
+      setFilters(newFilters);
+      setActiveFilters(newFilters);
+    }
+  };
+
   // Main Render Logic
   if (currentView === 'details' && selectedRecipe) {
     return <RecipeDetail recipe={selectedRecipe} onBack={handleBackToHome} />;
@@ -138,7 +163,7 @@ function App() {
           />
 
           {/* Search Bar */}
-          <div className="relative mb-6">
+          <div className="relative mb-4">
             <input
               type="text"
               placeholder="ابحث عن وصفة، مكون، أو منطقة..."
@@ -147,6 +172,36 @@ function App() {
               className="w-full p-4 pr-12 rounded-xl border-none shadow-sm bg-white focus:ring-2 focus:ring-primary-200 outline-none text-gray-700 placeholder-gray-400"
             />
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          </div>
+
+          {/* Quick Filter Chips */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 px-1 no-scrollbar items-center">
+            {quickCategories.map((cat) => {
+              const isActive = (cat.id === 'all' && !activeFilters.category && !activeFilters.isVegetarian) || activeFilters.category === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleQuickCategoryClick(cat.id, cat.type)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all shadow-sm ${
+                    isActive
+                    ? 'bg-primary-600 text-white shadow-md transform scale-105'
+                    : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+             <button
+                  onClick={() => handleQuickCategoryClick('vegetarian', 'vegetarian')}
+                  className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all shadow-sm flex items-center gap-1 ${
+                    activeFilters.isVegetarian && !activeFilters.category
+                    ? 'bg-green-600 text-white shadow-md transform scale-105'
+                    : 'bg-white text-green-700 border border-gray-100 hover:bg-green-50'
+                  }`}
+                >
+                  <Leaf size={14} /> نباتي
+             </button>
           </div>
 
           {/* Results Info */}

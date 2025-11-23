@@ -18,7 +18,7 @@ const RecipeDetail: React.FC<Props> = ({ recipe, onBack }) => {
     const url = `${window.location.origin}${window.location.pathname}?id=${recipe.id}`;
     const text = `جرب وصفة ${recipe.name} من تطبيق وجبة! 😋\n${url}`;
     
-    // Try native share first (works best on mobile for WhatsApp etc.)
+    // Check if share API is supported
     if (navigator.share) {
       navigator.share({
         title: recipe.name,
@@ -26,7 +26,7 @@ const RecipeDetail: React.FC<Props> = ({ recipe, onBack }) => {
         url: url,
       }).catch(console.error);
     } else {
-      // Fallback to WhatsApp Web
+      // Fallback to direct WhatsApp link if native share is not supported
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     }
   };

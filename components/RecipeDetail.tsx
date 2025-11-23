@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Recipe } from '../types';
-import { ArrowRight, Clock, Users, MapPin, ChefHat, Leaf, Flame } from 'lucide-react';
+import { ArrowRight, Clock, Users, MapPin, Share2, Leaf, Flame } from 'lucide-react';
 
 interface Props {
   recipe: Recipe;
@@ -14,6 +14,23 @@ const RecipeDetail: React.FC<Props> = ({ recipe, onBack }) => {
     window.scrollTo(0, 0);
   }, []);
 
+  const handleShare = () => {
+    const url = `${window.location.origin}${window.location.pathname}?id=${recipe.id}`;
+    const text = `جرب وصفة ${recipe.name} من تطبيق وجبة! 😋\n${url}`;
+    
+    // Try native share first (works best on mobile for WhatsApp etc.)
+    if (navigator.share) {
+      navigator.share({
+        title: recipe.name,
+        text: text,
+        url: url,
+      }).catch(console.error);
+    } else {
+      // Fallback to WhatsApp Web
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen pb-24 animate-fade-in">
       {/* Sticky Header */}
@@ -25,6 +42,13 @@ const RecipeDetail: React.FC<Props> = ({ recipe, onBack }) => {
           <ArrowRight size={20} />
         </button>
         <h1 className="text-xl font-bold text-gray-800 font-cairo flex-1 truncate">{recipe.name}</h1>
+        <button 
+          onClick={handleShare}
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 active:bg-green-200 transition-colors"
+          title="مشاركة الوصفة"
+        >
+          <Share2 size={20} />
+        </button>
       </div>
 
       {/* Hero Section */}

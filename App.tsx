@@ -30,6 +30,20 @@ function App() {
     handleRefreshSuggestion();
   }, []);
 
+  // Handle Deep Links on Mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    if (idParam) {
+      const id = parseInt(idParam, 10);
+      const recipe = recipesData.find(r => r.id === id);
+      if (recipe) {
+        setSelectedRecipe(recipe);
+        setCurrentView('details');
+      }
+    }
+  }, []);
+
   const handleRefreshSuggestion = () => {
     const randomId = recipesData[Math.floor(Math.random() * recipesData.length)].id;
     setSuggestedRecipeId(randomId);
@@ -66,11 +80,15 @@ function App() {
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setCurrentView('details');
+    // Update URL without reloading
+    window.history.pushState({ id: recipe.id }, '', `?id=${recipe.id}`);
   };
 
   const handleBackToHome = () => {
     setCurrentView('home');
     setSelectedRecipe(null);
+    // Reset URL
+    window.history.pushState({}, '', window.location.pathname);
   };
 
   const handleApplyFilters = () => {
@@ -166,7 +184,7 @@ function App() {
       {/* Sticky Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-100 px-6 py-3 flex justify-around items-center z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <button 
-          onClick={() => setCurrentView('home')}
+          onClick={() => handleBackToHome()}
           className={`flex flex-col items-center gap-1 transition-colors ${currentView === 'home' ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
         >
           <Home size={24} strokeWidth={currentView === 'home' ? 2.5 : 2} />

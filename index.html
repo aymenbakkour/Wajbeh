@@ -4307,7 +4307,17 @@ window.showRecipeDetails = function(id) {
     </div>
   `;
 
-  dom.views.details.innerHTML = html;
+  dom.views.details.innerHTML = html + `
+  <footer class="bg-white py-4 text-center text-gray-500 text-sm mt-6">
+    <p>تصميم وتطوير بواسطة <strong>أيمن بكور</strong></p>
+    <p>
+      أعمالي على  
+      <a href="https://www.behance.net/aymenbakkour" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:underline">
+        Behance
+      </a>
+    </p>
+  </footer>
+`;
 
   // العرض: العنوان يبقى، زر الرجوع يظهر فقط في التفاصيل
   dom.headerTitle.classList.remove('hidden');
@@ -4383,7 +4393,7 @@ init();
     </script>
   <script type="module" src="/index.tsx"></script>
 </body>
-  <!-- Footer -->
+<!-- Footer -->
 <footer class="bg-white py-4 mt-8 text-center text-gray-500 text-sm">
   <p>تصميم وتطوير بواسطة <strong>أيمن بكور</strong></p>
   <p>

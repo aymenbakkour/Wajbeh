@@ -3807,21 +3807,6 @@ const recipesData = [
     ]
   }
 ];
-// هذه هي الوصفات حتى رقم 30.
-// (مثال لكيفية التعامل مع الحدث)
-
-const vegetarianToggleHome = document.getElementById('filter-vegetarian');
-
-vegetarianToggleHome.addEventListener('change', function() {
-  // 1. احصل على حالة التبديل الحالية (checked/unchecked)
-  const isVegetarian = this.checked;
-
-  // 2. استدعاء وظيفة التصفية الرئيسية في التطبيق
-  applyFilters(isVegetarian, otherFilters);
-
-  // 3. تحديث عرض قائمة الوصفات
-  renderRecipes();
-});
 
 // --- State Management ---
 const state = {
@@ -3844,13 +3829,13 @@ const dom = {
   headerTitle: document.querySelector('header h1'),
   headerSubtitle: document.querySelector('header div.text-sm'),
   backBtn: document.getElementById('back-btn'),
-  
+
   views: {
     home: document.getElementById('home-page'),
     details: document.getElementById('details-page'),
     filter: document.getElementById('filter-page')
   },
-  
+
   home: {
     suggestedContainer: document.getElementById('suggested-recipe-container'),
     searchInput: document.getElementById('search-input'),
@@ -3859,13 +3844,7 @@ const dom = {
     emptyState: document.getElementById('empty-state'),
     clearSearchBtn: document.getElementById('clear-search-btn')
   },
-  
-  nav: {
-    home: document.getElementById('nav-home'),
-    filter: document.getElementById('nav-filter'),
-    filterBadge: document.getElementById('filter-badge')
-  },
-  
+
   filter: {
     category: document.getElementById('filter-category'),
     regionContainer: document.getElementById('filter-region-container'),
@@ -3879,7 +3858,6 @@ const dom = {
 
 // --- Initialization ---
 function init() {
-  // Populate Filter Options
   const categories = [...new Set(recipesData.map(r => r.category))];
   const regions = [...new Set(recipesData.map(r => r.region))];
   const mainIngredients = [...new Set(recipesData.map(r => r.mainIngredient))];
@@ -3893,7 +3871,7 @@ function init() {
 
   const allRegionBtn = createRegionButton('الكل', '', true);
   dom.filter.regionContainer.appendChild(allRegionBtn);
-  
+
   regions.forEach(r => {
     dom.filter.regionContainer.appendChild(createRegionButton(r, r, false));
   });
@@ -3905,18 +3883,13 @@ function init() {
     dom.filter.ingredient.appendChild(opt);
   });
 
-  // Set Random Suggested Recipe
   refreshSuggestedRecipe();
 
-  // Event Listeners
-  dom.nav.home.addEventListener('click', () => switchView('home'));
-  dom.nav.filter.addEventListener('click', () => switchView('filter'));
-  
   dom.home.searchInput.addEventListener('input', (e) => {
     state.searchQuery = e.target.value;
     renderRecipeList();
   });
-  
+
   dom.home.clearSearchBtn.addEventListener('click', () => {
     state.searchQuery = '';
     dom.home.searchInput.value = '';
@@ -3927,9 +3900,7 @@ function init() {
   dom.filter.resetBtn.addEventListener('click', resetFilters);
   dom.backBtn.addEventListener('click', () => switchView('home'));
 
-  // Initial Render
   renderRecipeList();
-  updateNavState();
 }
 
 function createRegionButton(label, value, isActive) {
@@ -3937,23 +3908,19 @@ function createRegionButton(label, value, isActive) {
   btn.textContent = label;
   btn.dataset.value = value;
   btn.className = `px-4 py-2 rounded-full text-sm transition-colors ${isActive ? 'bg-primary-500 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`;
-  
+
   btn.addEventListener('click', () => {
-    // Toggle active visual state locally (state is updated on Apply)
     Array.from(dom.filter.regionContainer.children).forEach(b => {
       b.className = 'px-4 py-2 rounded-full text-sm transition-colors bg-gray-100 text-gray-600';
     });
     btn.className = 'px-4 py-2 rounded-full text-sm transition-colors bg-primary-500 text-white shadow-md';
-    
-    // Temporarily store selected region in a data attribute on the container for retrieval
     dom.filter.regionContainer.dataset.selected = value;
   });
-  
+
   return btn;
 }
 
-// --- Logic & Rendering ---
-
+// --- Rendering ---
 function refreshSuggestedRecipe() {
   const randomId = recipesData[Math.floor(Math.random() * recipesData.length)].id;
   state.suggestedRecipeId = randomId;
@@ -3967,7 +3934,6 @@ function renderSuggestedRecipe() {
   const html = `
     <div class="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 to-primary-800 text-white p-5 shadow-lg shadow-primary-200">
       <div class="absolute top-0 left-0 w-full h-full opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');"></div>
-      
       <div class="relative z-10">
         <div class="flex justify-between items-start mb-2">
           <span class="bg-white/20 backdrop-blur-sm text-xs px-2 py-1 rounded-lg flex items-center gap-1">
@@ -3994,10 +3960,9 @@ function renderSuggestedRecipe() {
       </div>
     </div>
   `;
-  
+
   dom.home.suggestedContainer.innerHTML = html;
-  
-  // Re-attach event listener for refresh button since innerHTML wiped it
+
   document.getElementById('refresh-suggested-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     refreshSuggestedRecipe();
@@ -4006,9 +3971,8 @@ function renderSuggestedRecipe() {
 
 function renderRecipeList() {
   const query = state.searchQuery.trim().toLowerCase();
-  
+
   const filtered = recipesData.filter(recipe => {
-    // Search
     const matchesSearch = 
       recipe.name.includes(query) || 
       recipe.region.includes(query) || 
@@ -4016,7 +3980,6 @@ function renderRecipeList() {
 
     if (!matchesSearch) return false;
 
-    // Filters
     if (state.filters.category && recipe.category !== state.filters.category) return false;
     if (state.filters.region && recipe.region !== state.filters.region) return false;
     if (state.filters.difficulty && recipe.difficulty !== state.filters.difficulty) return false;
@@ -4033,12 +3996,12 @@ function renderRecipeList() {
     dom.home.emptyState.classList.remove('hidden');
   } else {
     dom.home.emptyState.classList.add('hidden');
-    
+
     filtered.forEach(recipe => {
       const el = document.createElement('div');
       el.onclick = () => showRecipeDetails(recipe.id);
       el.className = "bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-4 active:scale-95 transition-transform duration-200 cursor-pointer hover:shadow-md";
-      
+
       const difficultyColor = 
         recipe.difficulty === 'سهل' ? 'bg-green-100 text-green-700' :
         recipe.difficulty === 'متوسط' ? 'bg-yellow-100 text-yellow-700' :
@@ -4048,7 +4011,7 @@ function renderRecipeList() {
         <div class="flex-shrink-0 w-20 h-20 bg-primary-50 rounded-2xl flex items-center justify-center text-4xl shadow-inner">
           ${recipe.icon}
         </div>
-        
+
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-start">
             <h3 class="text-lg font-bold text-gray-800 truncate font-cairo">${recipe.name}</h3>
@@ -4056,9 +4019,9 @@ function renderRecipeList() {
               ${recipe.difficulty}
             </span>
           </div>
-          
+
           <p class="text-sm text-gray-500 mb-2 truncate">${recipe.category} • ${recipe.region}</p>
-          
+
           <div class="flex items-center gap-4 text-gray-400 text-xs">
             <div class="flex items-center gap-1">
               <i class="fa-regular fa-clock"></i>
@@ -4071,21 +4034,21 @@ function renderRecipeList() {
           </div>
         </div>
       `;
-      
+
       dom.home.recipesList.appendChild(el);
     });
   }
 }
 
-// Global scope wrapper for onclick
+// --- Recipe Details ---
 window.showRecipeDetails = function(id) {
   const recipe = recipesData.find(r => r.id === id);
   if (!recipe) return;
-  
+
   const vegBadge = recipe.isVegetarian 
     ? `<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center gap-1"><i class="fa-solid fa-leaf"></i> نباتي</span>` 
     : '';
-    
+
   const diffColor = recipe.difficulty === 'صعب' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700';
 
   const html = `
@@ -4098,7 +4061,6 @@ window.showRecipeDetails = function(id) {
       <p class="text-center text-gray-600 leading-relaxed font-amiri text-lg max-w-md">
         ${recipe.intro}
       </p>
-      
       <div class="grid grid-cols-3 gap-3 w-full mt-6">
         <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center">
           <i class="fa-regular fa-clock text-primary-500 mb-1"></i>
@@ -4128,40 +4090,23 @@ window.showRecipeDetails = function(id) {
 
     <!-- Content -->
     <div class="px-6 mt-6 space-y-8">
-      
-      <!-- Ingredients -->
       <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100">
         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 font-cairo">
           <div class="w-1 h-6 bg-primary-500 rounded-full"></div>
           المقادير
         </h2>
         <ul class="space-y-3">
-          ${recipe.ingredients.map(ing => `
-            <li class="flex items-start gap-3 text-gray-700 font-amiri text-lg">
-              <span class="w-1.5 h-1.5 bg-primary-400 rounded-full mt-2.5 flex-shrink-0"></span>
-              <span>${ing}</span>
-            </li>
-          `).join('')}
+          ${recipe.ingredients.map(ing => `<li class="flex items-start gap-3 text-gray-700 font-amiri text-lg"><span class="w-1.5 h-1.5 bg-primary-400 rounded-full mt-2.5 flex-shrink-0"></span>${ing}</li>`).join('')}
         </ul>
       </div>
 
-      <!-- Steps -->
       <div>
         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 font-cairo">
           <div class="w-1 h-6 bg-primary-500 rounded-full"></div>
           طريقة التحضير
         </h2>
         <div class="space-y-6">
-          ${recipe.steps.map((step, idx) => `
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold font-cairo shadow-sm">
-                ${idx + 1}
-              </div>
-              <p class="text-gray-700 leading-relaxed font-amiri text-lg pt-0.5">
-                ${step}
-              </p>
-            </div>
-          `).join('')}
+          ${recipe.steps.map((step, idx) => `<div class="flex gap-4"><div class="flex-shrink-0 w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center font-bold font-cairo shadow-sm">${idx+1}</div><p class="text-gray-700 leading-relaxed font-amiri text-lg pt-0.5">${step}</p></div>`).join('')}
         </div>
       </div>
 
@@ -4170,65 +4115,40 @@ window.showRecipeDetails = function(id) {
       </div>
     </div>
   `;
-  
+
   dom.views.details.innerHTML = html;
-  
-  // Header Adjustments
+
+  // العرض: العنوان يبقى، زر الرجوع يظهر فقط في التفاصيل
+  dom.headerTitle.classList.remove('hidden');
+  dom.headerSubtitle.classList.remove('hidden');
   dom.backBtn.classList.remove('hidden');
-  dom.headerTitle.classList.add('hidden'); // Hide logo text on detail
-  dom.headerSubtitle.classList.add('hidden'); // Hide subtitle
-  
+
   switchView('details');
   window.scrollTo(0, 0);
 };
 
+// --- Switch View ---
 function switchView(viewName) {
   state.view = viewName;
-  
-  // Hide all
+
   Object.values(dom.views).forEach(el => el.classList.add('hidden'));
-  
-  // Show target
   dom.views[viewName].classList.remove('hidden');
-  
-  updateNavState();
-  
-  // Specific logic
-  if (viewName !== 'details') {
-    dom.backBtn.classList.add('hidden');
-    dom.headerTitle.classList.remove('hidden');
-    dom.headerSubtitle.classList.remove('hidden');
-  }
-}
 
-function updateNavState() {
-  // Simple check based on view
-  dom.nav.home.classList.remove('text-primary-600');
-  dom.nav.home.classList.add('text-gray-400');
-  
-  dom.nav.filter.classList.remove('text-primary-600');
-  dom.nav.filter.classList.add('text-gray-400');
+  // العنوان يبقى دائمًا ظاهر
+  dom.headerTitle.classList.remove('hidden');
+  dom.headerSubtitle.classList.remove('hidden');
 
-  if (state.view === 'home' || state.view === 'details') {
-    dom.nav.home.classList.add('text-primary-600');
-    dom.nav.home.classList.remove('text-gray-400');
-  } else if (state.view === 'filter') {
-    dom.nav.filter.classList.add('text-primary-600');
-    dom.nav.filter.classList.remove('text-gray-400');
-  }
-  
-  // Badge logic
-  const isFiltered = Object.values(state.filters).some(v => v !== '' && v !== false);
-  if (isFiltered) {
-    dom.nav.filterBadge.classList.remove('hidden');
+  if (viewName === 'details') {
+    dom.backBtn.classList.remove('hidden');
   } else {
-    dom.nav.filterBadge.classList.add('hidden');
+    dom.backBtn.classList.add('hidden');
   }
 }
 
+// --- Filters ---
 function applyFilters() {
   const selectedRegion = dom.filter.regionContainer.dataset.selected || '';
-  
+
   state.filters = {
     category: dom.filter.category.value,
     region: selectedRegion,
@@ -4236,29 +4156,25 @@ function applyFilters() {
     mainIngredient: dom.filter.ingredient.value,
     isVegetarian: dom.filter.vegetarian.checked
   };
-  
+
   switchView('home');
   renderRecipeList();
 }
 
 function resetFilters() {
-  // Reset DOM
   dom.filter.category.value = '';
   dom.filter.difficulty.value = '';
   dom.filter.ingredient.value = '';
   dom.filter.vegetarian.checked = false;
-  
-  // Reset Region Buttons
+
   Array.from(dom.filter.regionContainer.children).forEach(b => {
     b.className = 'px-4 py-2 rounded-full text-sm transition-colors bg-gray-100 text-gray-600';
   });
   dom.filter.regionContainer.dataset.selected = '';
-  // Highlight "All" button (first one)
   if(dom.filter.regionContainer.firstChild) {
      dom.filter.regionContainer.firstChild.className = 'px-4 py-2 rounded-full text-sm transition-colors bg-primary-500 text-white shadow-md';
   }
 
-  // Reset State
   state.filters = {
     category: '',
     region: '',
@@ -4266,10 +4182,9 @@ function resetFilters() {
     mainIngredient: '',
     isVegetarian: false
   };
-  
+
   renderRecipeList();
-  updateNavState();
 }
 
-// Start
+// --- Start ---
 init();
